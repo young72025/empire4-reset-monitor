@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>EMPIRE4 — Resets em tempo real</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:#090b10;color:#fff;display:flex;align-items:center;justify-content:center;padding:20px}
+    .card{width:min(760px,100%);background:linear-gradient(145deg,#151922,#0d1017);border:1px solid #292f3c;border-radius:24px;padding:34px;box-shadow:0 20px 70px rgba(0,0,0,.45)}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+    .guild{font-size:clamp(32px,7vw,58px);font-weight:900;letter-spacing:1px}
+    .status{font-size:13px;padding:9px 13px;border-radius:999px;background:#17251a;color:#8cff9c;border:1px solid #285d31}
+    .label{margin-top:35px;color:#9ca5b5;text-transform:uppercase;letter-spacing:3px;font-size:13px}
+    .resets{font-size:clamp(70px,16vw,150px);line-height:1;font-weight:900;margin:10px 0 20px}
+    .meta{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .box{background:#11151e;border:1px solid #252b36;border-radius:15px;padding:16px}
+    .box small{display:block;color:#858e9e;margin-bottom:6px}
+    .box strong{font-size:20px}
+    .updated{margin-top:20px;color:#8e97a6;font-size:14px}
+    .error{color:#ff8c8c}
+    @media(max-width:500px){.card{padding:24px}.meta{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="top">
+      <div class="guild">EMPIRE4</div>
+      <div id="status" class="status">● MONITORANDO</div>
+    </div>
+
+    <div class="label">Total de Resets</div>
+    <div id="resets" class="resets">—</div>
+
+    <div class="meta">
+      <div class="box"><small>Membros</small><strong id="members">—</strong></div>
+      <div class="box"><small>Fonte</small><strong>MUCABRASIL</strong></div>
+    </div>
+
+    <div id="updated" class="updated">Carregando...</div>
+  </main>
+
+<script>
+async function atualizar(){
+  const bust = Date.now();
+  try{
+    const r = await fetch(`data/resets.json?t=${bust}`, {cache:"no-store"});
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    const d = await r.json();
+
+    document.getElementById("resets").textContent =
+      Number(d.resets || 0).toLocaleString("pt-BR");
+    document.getElementById("members").textContent =
+      Number(d.members || 0).toLocaleString("pt-BR");
+
+    const dt = new Date(d.updated_at);
+    document.getElementById("updated").textContent =
+      "Última atualização: " +
+      (isNaN(dt) ? d.updated_at : dt.toLocaleString("pt-BR"));
+
+    document.getElementById("status").textContent = "● ATUALIZADO";
+    document.getElementById("status").className = "status";
+  }catch(e){
+    document.getElementById("status").textContent = "● ERRO AO ATUALIZAR";
+    document.getElementById("status").className = "status error";
+    document.getElementById("updated").textContent =
+      "Não foi possível carregar os dados agora.";
+  }
+}
+atualizar();
+setInterval(atualizar, 30000);
+</script>
+</body>
+</html>
